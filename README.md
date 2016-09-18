@@ -17,6 +17,8 @@ The MVC pattern is a useful pattern for the reuse of object code and a pattern t
 
 ### The MVC Architecture in Rails
 
+![MVC Architecture in Rails](https://upload.wikimedia.org/wikibooks/en/0/0a/Mvc_rails.jpg)
+
 Active Record is the M in MVC - the model - which is the layer of the system responsible for representing business data and logic. Active Record facilitates the creation and use of business objects whose data requires persistent storage to a database. It is an implementation of the Active Record pattern which itself is a description of an Object Relational Mapping system.
 
 Active Record gives us several mechanisms, the most important being the ability to:
@@ -142,6 +144,8 @@ In Rails, an association is a connection between two Active Record models. Activ
     end
 
  which means each book belongs to exactly one author.
+ 
+ ![belongs_to](http://guides.rubyonrails.org/images/belongs_to.png)
 
  The <b>has_one</b> Association
 
@@ -150,6 +154,8 @@ In Rails, an association is a connection between two Active Record models. Activ
      end
 
  which means each supplier in the application has only one account.
+ 
+ ![has_one](http://guides.rubyonrails.org/images/has_one.png)
 
  The <b>has_many</b> Association
 
@@ -158,54 +164,25 @@ In Rails, an association is a connection between two Active Record models. Activ
      end
 
  An author can have many books.
+ 
+ ![has_many](http://guides.rubyonrails.org/images/has_many.png)
 
  The <b>has_many :through</b> Association
 
  A has_many :through association is often used to set up a many-to-many connection with another model.
 
-     class Physician < ApplicationRecord
-       has_many :appointments
-       has_many :patients, through: :appointments
-     end
-    
-    class Appointment < ApplicationRecord
-      belongs_to :physician
-      belongs_to :patient
-    end
-
-    class Patient < ApplicationRecord
-      has_many :appointments
-      has_many :physicians, through: :appointments
-    end
+![has_many_through](http://guides.rubyonrails.org/images/has_many_through.png)
 
 The <b>has_one :through</b> Association
 A has_one :through association sets up a one-to-one connection with another model.
 
-    class Supplier < ApplicationRecord
-      has_one :account
-      has_one :account_history, through: :account
-    end
-
-    class Account < ApplicationRecord
-      belongs_to :supplier
-      has_one :account_history
-    end
-
-    class AccountHistory < ApplicationRecord
-      belongs_to :account
-    end
+![has_one_through](http://guides.rubyonrails.org/images/has_one_through.png)
 
 The <b>has_and_belongs_to_many</b> Association
 
 A has_and_belongs_to_many association creates a direct many-to-many connection with another model, with no intervening model.
 
-    class Assembly < ApplicationRecord
-      has_and_belongs_to_many :parts
-    end
-
-    class Part < ApplicationRecord
-      has_and_belongs_to_many :assemblies
-    end
+![habtm](http://guides.rubyonrails.org/images/habtm.png)
 
 ##### Active Record Query Interface
 
@@ -217,156 +194,164 @@ Concerns are essentially modules that allow us to encapsulate model roles into s
 
 A typical Model concern looks like this:
 
-module Votable
-  extend ActiveModel::Concern
+    module Votable
+      extend ActiveModel::Concern
 
-  included do
-   has_many :votes, as: :votable
-  end
+      included do
+        has_many :votes, as: :votable
+      end
 
-  def upvote!
-   votes.create(type: :upvote)
-  end
+      def upvote!
+        votes.create(type: :upvote)
+      end
 
-  def downvote!
-    votes.create(type: :downvote)
-  end
-end
+      def downvote!
+        votes.create(type: :downvote)
+      end
+    end
 
 A controller concern might look like this:
 
-module FeedbackPerformer
-  extend ActiveSupport::Concern
+    module FeedbackPerformer
+      extend ActiveSupport::Concern
 
-  included do
-    before_action :restrict_with_user_token
-  end
+      included do
+        before_action :restrict_with_user_token
+      end
 
-  def create
-    # some code
-  end
+      def create
+        # some code
+      end
 
-  private
-  def feedback_params
-    params.require(:feedback).permit(:someparams)
-  end
-end
+      private
+      def feedback_params
+        params.require(:feedback).permit(:someparams)
+      end
+    end
 
 
 Traditionally, the models may look like this:
 
 Comment Model:
 
-class Comment < ActiveRecord::Base
-  belongs_to :commentable, polymorphic: true
-end
+    class Comment < ActiveRecord::Base
+      belongs_to :commentable, polymorphic: true
+    end
+
 Article Model:
 
-class Article < ActiveRecord::Base
-  has_many :comments, as: :commentable
+    class Article < ActiveRecord::Base
+      has_many :comments, as: :commentable
 
-  def find_first_comment
-    comments.first(created_at DESC)
-  end
+      def find_first_comment
+        comments.first(created_at DESC)
+      end
 
-  def self.least_commented
-   #return the article with least number of comments
-  end
-end
+      def self.least_commented
+       #return the article with least number of comments
+      end
+    end
+
 Event Model
 
-class Event < ActiveRecord::Base
-  has_many :comments, as: :commentable
+    class Event < ActiveRecord::Base
+      has_many :comments, as: :commentable
 
-  def find_first_comment
-    comments.first(created_at DESC)
-  end
+      def find_first_comment
+        comments.first(created_at DESC)
+      end
 
-  def self.least_commented
-   #returns the event with least number of comments
-  end
-end
+      def self.least_commented
+        #returns the event with least number of comments
+      end
+    end
+
 As we can notice, there is a significant piece of code common to both Event and Article. Using concerns we can extract this common code in a separate module Commentable.
 
 For this create a commentable.rb file in app/models/concerns.
 
-module Commentable
-  extend ActiveSupport::Concern
+    module Commentable
+      extend ActiveSupport::Concern
 
-  included do
-    has_many :comments, as: :commentable
-  end
+      included do
+        has_many :comments, as: :commentable
+      end
 
-  # for the given article/event returns the first comment
-  def find_first_comment
-    comments.first(created_at DESC)
-  end
+      # for the given article/event returns the first comment
+      def find_first_comment
+        comments.first(created_at DESC)
+      end
 
-  module ClassMethods
-    def least_commented
-      #returns the article/event which has the least number of comments
+      module ClassMethods
+        def least_commented
+          #returns the article/event which has the least number of comments
+        end
+      end
     end
-  end
-end
+
 And now your models look like this :
 
 Comment Model:
 
-class Comment < ActiveRecord::Base
-  belongs_to :commentable, polymorphic: true
-end
+    class Comment < ActiveRecord::Base
+      belongs_to :commentable, polymorphic: true
+    end
+ 
 Article Model:
 
-class Article < ActiveRecord::Base
-  include Commentable
-end
+    class Article < ActiveRecord::Base
+      include Commentable
+    end
+
 Event Model:
 
-class Event < ActiveRecord::Base
-  include Commentable
-end
+    class Event < ActiveRecord::Base
+      include Commentable
+    end
 
-Services:
+#### Services:
 
 Services are used to keep our Rails controllers clean and DRY. Service has the benefit of concentrating the core logic of the application in a separate object, instead of scattering it around controllers and models. When we apply some basic principles (like ‘fat models, slim controllers’) to our application, we can live happily very long with this basic fragmentation. However, when our application grows, our skinny controllers become not so skinny over time. We can’t test in isolation, because we’re highly coupled with the framework. To fix this problem, we can use service objects as a new layer in our design.
 
 We get a lot of benefits when we introduce services, including:
 
-Ability to test controllers - controller becomes a really thin wrapper which provides collaborators to services - thus we can only check if certain methods within controller are called when certain action occurs,
+* Ability to test controllers - controller becomes a really thin wrapper which provides collaborators to services - thus we can only check if certain methods within controller are called when certain action occurs,
 
-Ability to test business process in isolation - when we separate process from it’s environment, we can easily stub all collaborators and only check if certain steps are performed within our service.
+* Ability to test business process in isolation - when we separate process from it’s environment, we can easily stub all collaborators and only check if certain steps are performed within our service.
 
-They make controllers slim - even in bigger applications actions using service objects usually don’t take more than 10 LoC.
+* They make controllers slim - even in bigger applications actions using service objects usually don’t take more than 10 LoC.
 
 Example:
 A common design pattern for performing tasks after an object is created is to use an ActiveModel Callback. For example:
 
-class User < ActiveRecord::Base
-  after_create :send_welcome_email
+    class User < ActiveRecord::Base
+      after_create :send_welcome_email
 
-  def send_welcome_email
-    # Send an email
-  end
-end
+      def send_welcome_email
+        # Send an email
+      end
+    end
 
 Yes, this is simplistic, but there are a few problems with this.
 
-It's not the User models responsibility to send an email.
-Unless it modifies internal state, callbacks should be avoided.
-Testing becomes painful and often times requires stubbing.
+* It's not the User models responsibility to send an email.
+* Unless it modifies internal state, callbacks should be avoided.
+* Testing becomes painful and often times requires stubbing.
+
 Lets talk about responsibility for a moment. In my opinion, if it's an interaction, it shouldn't belong to one specific model. What if you need a send_invoice_email to go with send_welcome_email? This can quickly get out of hand. This is why I use service objects.
 
 So what exactly is a service object? It's really just an object that encapsulates operations. Using our initial callback example, lets refactor it to use a service object by adding the following to app/services/send_welcome_email.rb
 
-class SendWelcomeEmail
-  def self.call(user)
-    UserMailer.welcome_email(user).deliver
-  end
-end
+    class SendWelcomeEmail
+      def self.call(user)
+        UserMailer.welcome_email(user).deliver
+      end
+    end
 
 Now to send a welcome email, you would do:
 
-SendWelcomeEmail.call(user)
+    SendWelcomeEmail.call(user)
+
 This makes it far easier to test and decouples the responsibility.
 
 
