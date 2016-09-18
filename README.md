@@ -504,62 +504,67 @@ This makes it far easier to test and decouples the responsibility.
 
 
 
-
-
-
-
-
-
-
-
-
-
-
+### Q2
 
 A user browses to `https://gitlab.com/gitlab-org/gitlab-ce` in their browser. Please describe in as much detail as you think is appropriate for the lifecycle of this request and what happens in the browser, over the network, on GitLab servers, and in the GitLab Rails application before the request completes.
 
-In a summarized form,
-
-
-
 Step 1: Request a record
+
 You begin by asking your computer to resolve a hostname, such as visiting 'https://www.gitlab.com' in a web browser. The first place your computer looks is its local DNS cache, which stores DNS information that the computer has recently retrieved.
+
 Step 2: Ask the Recursive DNS servers
 
 If the records are not stored locally, your computer queries (or contacts) your ISP's recursive DNS servers. These machines perform the legwork of DNS queries on behalf of their customers. The recursive DNS servers have their own caches, which they check before continuing with the query.
+
 Step 3: Ask the Root DNS servers
 
 If the recursive DNS servers do not have the record cached, they contact the root nameservers. These thirteen nameservers contain pointers for all of the Top-Level Domains (TLDs), such as '.com', '.net' and '.org'. If you are looking for 'www.gitlab.com.', the root nameservers look at the TLD for the domain - 'www.gitlab.com'- and direct the query to the TLD DNS nameservers responsible for all '.com' pointers.
+
 Step 4: Ask the TLD DNS servers
 
 The TLD DNS servers do not store the DNS records for individual domains; instead, they keep track of the authoritative nameservers for all the domains within their TLD. The TLD DNS servers look at the next part of the query from right to left - 'www.gitlab.com' - then direct the query to the authoritative nameservers for 'gitlab.com'.
+
 Step 5: Ask the Authoritative DNS servers
 
 Authoritative nameservers contain all of the DNS records for a given domain, such as host records (which store IP addresses), MX records (which identify nameservers for a domain), and so on. Since you are looking for the IP address of 'www.gitlab.com', the recursive server queries the authoritative nameservers and asks for the host record for 'www.gitlab.com'.
+
 Step 6: Retrieving the record
 
 The recursive DNS server receives the host record for 'www.gitlab.com' from the authoritative nameservers, and stores the record in its local cache. If anyone else requests the host record for 'www.gitlab.com', the recursive servers will already have the answer, and will not need to go through the lookup process again until the record expires from cache.
 
-After the DNS gets resolved, the request hits a web server, which asks Rails what it has for that url.
-Rails goes to the routes.rb file first, which takes the URL and calls a corresponding controller action.
-The controller goes and gets whatever stuff it needs from the database using the relevant model.
-With the data the controller got from the model, it uses the respective view to make some HTML.
+![Rails stack](file:///Users/sakshi/Desktop/Screen%20Shot%202016-09-18%20at%203.18.28%20pm.png)
+
+Step 7: Web Server
+
+After the DNS gets resolved, the request hits a web server, which asks Rails what it has for that url. In this case the url being `https://gitlab.com/gitlab-org/gitlab-ce`. A web server is a program that takes a request to your website from a user and does some processing on it. Then, it might give the request to your Rails app. Nginx and Apache are the two big web servers. If the request is for something that doesn’t change often, like CSS, JavaScript, or images, your Rails app probably doesn’t need to see it. The web server can handle the request itself, without even talking to your app. It’ll usually be faster that way.
+Web servers can handle SSL requests, serve static files and assets, compress requests, and do lots of other things that almost every website needs. And if your Rails app does need to handle a request, the web server will pass it on to your app server.
+
+![web server](file:///Users/sakshi/Desktop/Screen%20Shot%202016-09-18%20at%203.52.09%20pm.png)
+
+Step 8: Application Server
+
+An app server is the thing that actually runs our Rails app. Our app server loads our code and keeps our app in memory. When our app server gets a request from our web server, it tells our Rails app about it. 
+That’s probably what we do in development mode! In production, though, we usually have a web server in front. It’ll handle multiple apps at once, render our assets faster, and deal with a lot of the processing we'll do on every request.
+
+There are a ton of app servers for Rails apps, including Mongrel (which isn’t used much anymore), Unicorn, Thin, Rainbows, and Puma. Each has different advantages and different philosophies. But in the end, they all accomplish the same thing – keeping your Rails app running and handling requests.
+
+![app server](file:///Users/sakshi/Desktop/Screen%20Shot%202016-09-18%20at%203.53.37%20pm.png)
+
+Step 9: Rack 
+
+Rack is the magic that lets any of these app servers run our Rails app. (Or Sinatra app, or Padrino app, or…)
+Rack can be imagined as a common language that Ruby web frameworks (like Rails) and app servers both speak. Because each side knows the same language, it means Rails can talk to Unicorn and Unicorn to Rails, without having either Rails or Unicorn know anything about the other.
+
+![rack](file:///Users/sakshi/Desktop/Screen%20Shot%202016-09-18%20at%203.55.28%20pm.png)
+
+Step 10: Routes, controllers, models and views
+
+Rails goes to the routes.rb file first, which takes the URL and calls a corresponding controller action. The controller goes and gets whatever stuff it needs from the database using the relevant model. With the data the controller got from the model, it uses the respective view to make some HTML. 
+
+![controller](file:///Users/sakshi/Desktop/Screen%20Shot%202016-09-18%20at%203.56.54%20pm.png)
+
+Step 11: The Answer!
+
 Rails packs up the response and gives it to the web server. The web server delivers the response to the browser to display the page in the browser.
 
-Step 7: The Answer!
-
-Finally, the recursive server gives the host record back to your computer. Your computer stores the record in its cache, reads the IP address from the record, then passes this information to the web browser. Your browser then opens a connection to the IP address '72.14.207.99' on port 80 (for HTTP), and our webserver passes the web page to your browser, which displays gitlab.
-
-
-
-
-
-
-
-
-
-
-
-What is a request?
-
-A request is a set of instrutions that tells a server what kind of response we want. In the example, https://gitlab.com/gitlab-org/gitlab-ce` the request path is /gitlab-org/gitlab-ce which is going to tell our server which resource we are looking for. There is also a request verb. In this example, we will use a GET request.
+![response](file:///Users/sakshi/Desktop/Screen%20Shot%202016-09-18%20at%203.57.47%20pm.png)
