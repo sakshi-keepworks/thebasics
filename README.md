@@ -532,7 +532,7 @@ Step 6: Retrieving the record
 
 The recursive DNS server receives the host record for 'www.gitlab.com' from the authoritative nameservers, and stores the record in its local cache. If anyone else requests the host record for 'www.gitlab.com', the recursive servers will already have the answer, and will not need to go through the lookup process again until the record expires from cache.
 
-![Rails stack](file:///Users/sakshi/Desktop/Screen%20Shot%202016-09-18%20at%203.18.28%20pm.png)
+![Rails stack](https://drive.google.com/drive/u/0/folders/0Bzru_-iPatGAeUVoeDloVkg2TnM)
 
 Step 7: Web Server
 
