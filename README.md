@@ -561,6 +561,14 @@ Step 10: Routes, controllers, models and views
 
 Rails goes to the routes.rb file first, which takes the URL and calls a corresponding controller action. The controller goes and gets whatever stuff it needs from the database using the relevant model. With the data the controller got from the model, it uses the respective view to make some HTML. 
 
+Sometimes we might want to force a particular controller to only be accessible via an HTTPS protocol for security reasons. We can use the force_ssl method in your controller to enforce that:
+
+    class DinnerController
+      force_ssl
+    end
+    
+So, the URL will use https instead of http.
+
 ![controller](https://cloud.githubusercontent.com/assets/4617609/18615174/0d3a1e04-7dbd-11e6-9c30-f1d25c733390.png)
 
 Step 11: The Answer!
