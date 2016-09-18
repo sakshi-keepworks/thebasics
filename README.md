@@ -21,195 +21,197 @@ Active Record is the M in MVC - the model - which is the layer of the system res
 
 Active Record gives us several mechanisms, the most important being the ability to:
 
--> Represent models and their data.
--> Represent associations between these models.
--> Represent inheritance hierarchies through related models.
--> Validate models before they get persisted to the database.
--> Perform database operations in an object-oriented fashion.
+* Represent models and their data.
+* Represent associations between these models.
+* Represent inheritance hierarchies through related models.
+* Validate models before they get persisted to the database.
+* Perform database operations in an object-oriented fashion.
 
-Active Record Migrations
+##### Active Record Migrations
 
 Migrations are a convenient way to alter our database schema over time in a consistent and easy way. Each migration is a new 'version' of the database.
 Here's an example of a migration:
 
-class CreateProducts < ActiveRecord::Migration
-  def change
-    create_table :products do |t|
-      t.string :name
-      t.text :description
-
-      t.timestamps
+    class CreateProducts < ActiveRecord::Migration
+      def change
+        create_table :products do |t|
+          t.string :name
+          t.text :description
+      
+          t.timestamps
+        end
+      end
     end
-  end
-end
 
 We can change a column, rename a column, remove a column, and there are many more migration definitions.
 Example:
 
-class AddPartNumberToProducts < ActiveRecord::Migration[5.0]
-  def change
-    add_column :products, :part_number, :string
-  end
-end
+    class AddPartNumberToProducts < ActiveRecord::Migration[5.0]
+      def change
+        add_column :products, :part_number, :string
+      end
+    end
+<hr>
+    class RemovePartNumberFromProducts < ActiveRecord::Migration[5.0]
+      def change
+        remove_column :products, :part_number, :string
+      end
+    end
 
-class RemovePartNumberFromProducts < ActiveRecord::Migration[5.0]
-  def change
-    remove_column :products, :part_number, :string
-  end
-end
-
-Active Record Validations
+##### Active Record Validations
 
 Validations are used to ensure that only valid data is saved into your database. For example, it may be important to your application to ensure that every user provides a valid email address and mailing address. Model-level validations are the best way to ensure that only valid data is saved into your database.
 
 A validation in Rails Active Record looks like:
 
-class Person < ApplicationRecord
-  validates :name, presence: true
-end
+    class Person < ApplicationRecord
+      validates :name, presence: true
+    end
 
 The following methods trigger validations, and will save the object to the database only if the object is valid:
 
-create
-create!
-save
-save!
-update
-update!
+* create
+* create!
+* save
+* save!
+* update
+* update!
 
-Active Record CallBacks
+##### Active Record CallBacks
 
 Callbacks are methods that get called at certain moments of an object's life cycle. With callbacks it is possible to write code that will run whenever an Active Record object is created, saved, updated, deleted, validated, or loaded from the database.
 
 Available callbacks
 
-3.1 Creating an Object
-before_validation
-after_validation
-before_save
-around_save
-before_create
-around_create
-after_create
-after_save
-after_commit/after_rollback
+Creating an Object:
 
-3.2 Updating an Object
-before_validation
-after_validation
-before_save
-around_save
-before_update
-around_update
-after_update
-after_save
-after_commit/after_rollback
+* before_validation
+* after_validation
+* before_save
+* around_save
+* before_create
+* around_create
+* after_create
+* after_save
+* after_commit/after_rollback
 
-3.3 Destroying an Object
-before_destroy
-around_destroy
-after_destroy
-after_commit/after_rollback
+Updating an Object:
+
+* before_validation
+* after_validation
+* before_save
+* around_save
+* before_update
+* around_update
+* after_update
+* after_save
+* after_commit/after_rollback
+
+Destroying an Object:
+
+* before_destroy
+* around_destroy
+* after_destroy
+* after_commit/after_rollback
 
 Example:
 
-class User < ApplicationRecord
-  validates :login, :email, presence: true
+    class User < ApplicationRecord
+      validates :login, :email, presence: true
 
-  before_validation :ensure_login_has_a_value
+      before_validation :ensure_login_has_a_value
 
-  protected
-    def ensure_login_has_a_value
-      if login.nil?
-        self.login = email unless email.blank?
+      protected
+      def ensure_login_has_a_value
+        if login.nil?
+          self.login = email unless email.blank?
+        end
       end
     end
-end
 
-Active Record Associations
+##### Active Record Associations
 
 In Rails, an association is a connection between two Active Record models. Active Record associations can be used to describe one-to-one, one-to-many and many-to-many relationships between models. Each model uses an association to describe its role in the relation.
 
- The belongs_to Association
+ The <b>belongs_to</b> Association
 
  Example:
- class Book < ApplicationRecord
-   belongs_to :author
- end
+ 
+    class Book < ApplicationRecord
+      belongs_to :author
+    end
 
  which means each book belongs to exactly one author.
 
- The has_one Association
+ The <b>has_one</b> Association
 
- class Supplier < ApplicationRecord
-   has_one :account
- end
+     class Supplier < ApplicationRecord
+       has_one :account
+     end
 
  which means each supplier in the application has only one account.
 
- The has_many Association
+ The <b>has_many</b> Association
 
- class Author < ApplicationRecord
-   has_many :books
- end
+     class Author < ApplicationRecord
+       has_many :books
+     end
 
  An author can have many books.
 
- The has_many :through Association
+ The <b>has_many :through</b> Association
 
  A has_many :through association is often used to set up a many-to-many connection with another model.
 
- class Physician < ApplicationRecord
-   has_many :appointments
-   has_many :patients, through: :appointments
- end
- 
-class Appointment < ApplicationRecord
-  belongs_to :physician
-  belongs_to :patient
-end
- 
-class Patient < ApplicationRecord
-  has_many :appointments
-  has_many :physicians, through: :appointments
-end
+     class Physician < ApplicationRecord
+       has_many :appointments
+       has_many :patients, through: :appointments
+     end
+    
+    class Appointment < ApplicationRecord
+      belongs_to :physician
+      belongs_to :patient
+    end
 
-The has_one :through Association
+    class Patient < ApplicationRecord
+      has_many :appointments
+      has_many :physicians, through: :appointments
+    end
+
+The <b>has_one :through</b> Association
 A has_one :through association sets up a one-to-one connection with another model.
 
-class Supplier < ApplicationRecord
-  has_one :account
-  has_one :account_history, through: :account
-end
+    class Supplier < ApplicationRecord
+      has_one :account
+      has_one :account_history, through: :account
+    end
 
-class Account < ApplicationRecord
-  belongs_to :supplier
-  has_one :account_history
-end
+    class Account < ApplicationRecord
+      belongs_to :supplier
+      has_one :account_history
+    end
 
-class AccountHistory < ApplicationRecord
-  belongs_to :account
-end
+    class AccountHistory < ApplicationRecord
+      belongs_to :account
+    end
 
-The has_and_belongs_to_many Association
+The <b>has_and_belongs_to_many</b> Association
 
 A has_and_belongs_to_many association creates a direct many-to-many connection with another model, with no intervening model.
 
-class Assembly < ApplicationRecord
-  has_and_belongs_to_many :parts
-end
- 
-class Part < ApplicationRecord
-  has_and_belongs_to_many :assemblies
-end
+    class Assembly < ApplicationRecord
+      has_and_belongs_to_many :parts
+    end
 
-Active Record Query Interface
+    class Part < ApplicationRecord
+      has_and_belongs_to_many :assemblies
+    end
+
+##### Active Record Query Interface
 
 Active Record will perform queries on the database and is compatible with most database systems, including MySQL, MariaDB, PostgreSQL and SQLite. Regardless of which database system we're using, the Active Record method format will always be the same.
 
-
-
-Concerns:
+#### Concerns:
 
 Concerns are essentially modules that allow us to encapsulate model roles into separate files to DRY up our code. Concerns can be included in different models or controllers and can be reused.
 
