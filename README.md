@@ -188,6 +188,154 @@ A has_and_belongs_to_many association creates a direct many-to-many connection w
 
 Active Record will perform queries on the database and is compatible with most database systems, including MySQL, MariaDB, PostgreSQL and SQLite. Regardless of which database system we're using, the Active Record method format will always be the same.
 
+#### ActionController
+
+Action Controller is the C in MVC. The controller is responsible for making sense of the request and producing the appropriate output. For most conventional RESTful applications, the controller will receive the request, fetch or save data from a model and use a view to create HTML output. A controller can thus be thought of as a middleman between models and views. It makes the model data available to the view so it can display that data to the user, and it saves or updates user data to the model.
+
+A controller is a Ruby class which inherits from ApplicationController and has methods just like any other class. When our application receives a request, the routing will determine which controller and action to run, then Rails creates an instance of that controller and runs the method with the same name as the action.
+
+    class ClientsController < ApplicationController
+      def new
+      end
+    end
+
+As an example, if a user goes to /clients/new in your application to add a new client, Rails will create an instance of ClientsController and call its new method.
+
+##### Parameters:
+
+There are two kinds of parameters possible in a web application. The first are parameters that are sent as part of the URL, called query string parameters. The query string is everything after "?" in the URL. The second type of parameter is usually referred to as POST data. This information usually comes from an HTML form which has been filled in by the user. It's called POST data because it can only be sent as part of an HTTP POST request. Rails does not make any distinction between query string parameters and POST parameters, and both are available in the params hash in your controller:
+
+    class ClientsController < ApplicationController
+      # This action uses query string parameters because it gets run
+      # by an HTTP GET request, but this does not make any difference
+      # to the way in which the parameters are accessed. The URL for
+      # this action would look like this in order to list activated
+      # clients: /clients?status=activated
+      def index
+        if params[:status] == "activated"
+          @clients = Client.activated
+        else
+          @clients = Client.inactivated
+        end
+      end
+
+      # This action uses POST parameters. They are most likely coming
+      # from an HTML form which the user has submitted. The URL for
+      # this RESTful request will be "/clients", and the data will be
+      # sent as part of the request body.
+      def create
+        @client = Client.new(params[:client])
+        if @client.save
+          redirect_to @client
+        else
+          # This line overrides the default rendering behavior, which
+          # would have been to render the "create" view.
+          render "new"
+        end
+      end
+    end
+
+
+##### Strong Parameters
+With strong parameters, Action Controller parameters are forbidden to be used in Active Model mass assignments until they have been whitelisted. This means that we have to make a conscious decision about which attributes to allow for mass update. This is a better security practice to help prevent accidentally allowing users to update sensitive model attributes.
+
+In addition, parameters can be marked as required and will flow through a predefined raise/rescue flow to end up as a 400 Bad Request.
+
+    class PeopleController < ActionController::Base
+      # This will raise an ActiveModel::ForbiddenAttributes exception
+      # because it's using mass assignment without an explicit permit
+      # step.
+      def create
+        Person.create(params[:person])
+      end
+
+      # This will pass with flying colors as long as there's a person key
+      # in the parameters, otherwise it'll raise a
+      # ActionController::ParameterMissing exception, which will get
+      # caught by ActionController::Base and turned into that 400 Bad
+      # Request reply.
+      def update
+        person = current_account.people.find(params[:id])
+        person.update!(person_params)
+        redirect_to person
+      end
+
+     private
+     # Using a private method to encapsulate the permissible parameters
+     # is just a good pattern since you'll be able to reuse the same
+     # permit list between create and update. Also, you can specialize
+     # this method with per-user checking of permissible attributes.
+      def person_params
+        params.require(:person).permit(:name, :age)
+      end
+    end
+
+#### Filters
+
+Filters are methods that are run "before", "after" or "around" a controller action.
+
+Filters are inherited, so if you set a filter on ApplicationController, it will be run on every controller in your application.
+
+"before" filters may halt the request cycle. A common "before" filter is one which requires that a user is logged in for an action to be run. You can define the filter method this way:
+
+Example:
+
+    class ApplicationController < ActionController::Base
+      before_action :require_login
+
+      private
+
+      def require_login
+        unless logged_in?
+          flash[:error] = "You must be logged in to access this section"
+          redirect_to new_login_url # halts request cycle
+        end
+      end
+    end
+
+#### Action View
+
+In Rails, web requests are handled by Action Controller and Action View. Typically, Action Controller will be concerned with communicating with the database and performing CRUD actions where necessary. Action View is then responsible for compiling the response.
+
+Action View templates are written using embedded Ruby in tags mingled with HTML. To avoid cluttering the templates with boilerplate code, a number of helper classes provide common behavior for forms, dates, and strings. It's also easy to add new helpers to our application as it evolves.
+
+2 Using Action View with Rails
+For each controller there is an associated directory in the app/views directory which holds the template files that make up the views associated with that controller. These files are used to display the view that results from each controller action.
+
+Let's take a look at what Rails does by default when creating a new resource using the scaffold generator:
+
+    $ bin/rails generate scaffold article
+      [...]
+      invoke  scaffold_controller
+      create    app/controllers/articles_controller.rb
+      invoke    erb
+      create      app/views/articles
+      create      app/views/articles/index.html.erb
+      create      app/views/articles/edit.html.erb
+      create      app/views/articles/show.html.erb
+      create      app/views/articles/new.html.erb
+      create      app/views/articles/_form.html.erb
+      [...]
+
+There is a naming convention for views in Rails. Typically, the views share their name with the associated controller action, as you can see above. For example, the index controller action of the articles_controller.rb will use the index.html.erb view file in the app/views/articles directory. The complete HTML returned to the client is composed of a combination of this ERB file, a layout template that wraps it, and all the partials that the view may reference.
+
+#### Templates and Partials
+
+Action View templates can be written in several ways. If the template file has a .erb extension then it uses a mixture of ERB (Embedded Ruby) and HTML.
+Rails supports multiple template systems and uses a file extension to distinguish amongst them. For example, an HTML file using the ERB template system will have .html.erb as a file extension.
+
+##### ERB
+
+Within an ERB template, Ruby code can be included using both <% %> and <%= %> tags. The <% %> tags are used to execute Ruby code that does not return anything, such as conditions, loops or blocks, and the <%= %> tags are used when you want output.
+
+##### Partials
+
+Partial templates - usually just called "partials" - are another device for breaking the rendering process into more manageable chunks. With partials, you can extract pieces of code from your templates to separate files and also reuse them throughout your templates.
+
+    <%= render "menu" %>
+
+This will render a file named _menu.html.erb at that point within the view that is being rendered. 
+
 #### Concerns:
 
 Concerns are essentially modules that allow us to encapsulate model roles into separate files to DRY up our code. Concerns can be included in different models or controllers and can be reused.
