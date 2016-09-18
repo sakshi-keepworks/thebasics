@@ -1,17 +1,21 @@
-Model–view–controller (MVC) is a software architectural pattern for implementing user interfaces on computers. It divides a given software application into three interconnected parts, so as to seperate internal representations of information from the ways that information is presented to or accepted from the user.
+### Q1
+Being a pretty standard Rails application, GitLab is built using the MVC design pattern. Please describe in as much detail as you think is appropriate what the responsibilities of the Model, View and Controller are, both in general and in Rails specifically, and what the benefits of this separation are. Also touch on how the Concern and Service patterns fit into this.
+
+<b>Model–view–controller (MVC)</b> is a software architectural pattern for implementing user interfaces on computers. It divides a given software application into three interconnected parts, so as to seperate internal representations of information from the ways that information is presented to or accepted from the user.
 
 In object-oriented programming development, model-view-controller (MVC) is the name of a methodology or design pattern for successfully and efficiently relating the user interface to underlying data models.
 
+<b>Model</b> - Model represents an object carrying data. It represents the underlying, logical structure of data in a software application and the high-level class associated with it. Model objects encapsulate the data specific to an application and define the logic and computation that manipulate and process that data. For example, a model object might represent a level in a game or a contact in an address book. A model object can have to-one and to-many relationships with other model objects. Because model objects represent knowledge and expertise related to a specific problem domain, they can be reused in similar problem domains. Ideally, a model object should have no explicit connection to the view objects that present its data and allow users to edit that data—it should not be concerned with user-interface and presentation issues.
+
+<b>View</b> - View represents the visualization of the data that model contains. It consists of all the things a user can see and respond to on the screen, such as buttons, display boxes, and so forth. A view object knows how to draw itself and can respond to user actions. A major purpose of view objects is to display data from the application’s model objects and to enable the editing of that data.
+
+<b>Controller</b> - Controller acts on both model and view. It controls the data flow into model object and updates the view whenever data changes. It keeps view and model seperate. A controller object acts as an intermediary between one or more of an application’s view objects and one or more of its model objects.
+
+<b>What the benefits of this separation are?</b>
+
 The MVC pattern is a useful pattern for the reuse of object code and a pattern that allows significant reduce to the time it takes to develop applications with user interfaces. The benefits of adopting this pattern are numerous. Many objects in these applications tend to be more reusable, and their interfaces tend to be better defined. Applications having an MVC design are also more easily extensible than other applications.
 
-Model - Model represents an object carrying data. It represents the underlying, logical structure of data in a software application and the high-level class associated with it. Model objects encapsulate the data specific to an application and define the logic and computation that manipulate and process that data. For example, a model object might represent a level in a game or a contact in an address book. A model object can have to-one and to-many relationships with other model objects. Because model objects represent knowledge and expertise related to a specific problem domain, they can be reused in similar problem domains. Ideally, a model object should have no explicit connection to the view objects that present its data and allow users to edit that data—it should not be concerned with user-interface and presentation issues.
-
-View - View represents the visualization of the data that model contains. It consists of all the things a user can see and respond to on the screen, such as buttons, display boxes, and so forth. A view object knows how to draw itself and can respond to user actions. A major purpose of view objects is to display data from the application’s model objects and to enable the editing of that data.
-
-Controller - Controller acts on both model and view. It controls the data flow into model object and updates the view whenever data changes. It keeps view and model seperate. A controller object acts as an intermediary between one or more of an application’s view objects and one or more of its model objects.
-
-
-
+### The MVC Architecture in Rails
 
 Active Record is the M in MVC - the model - which is the layer of the system responsible for representing business data and logic. Active Record facilitates the creation and use of business objects whose data requires persistent storage to a database. It is an implementation of the Active Record pattern which itself is a description of an Object Relational Mapping system.
 
